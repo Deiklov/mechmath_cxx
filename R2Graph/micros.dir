@@ -1,0 +1,6 @@
+Simple 2-dimensional objects                  ‰   ‰R2Graph.h
+    Implementation                            ‰   ‰R2Graph.cpp
+Test                                          ‰   ‰graphtst.cpp
+                                              ‰   ‰
+Makefile                                      ‰   ‰Makefile
+                                              ‰   ‰.

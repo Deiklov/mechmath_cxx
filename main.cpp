@@ -1,7 +1,7 @@
 #include <iostream>
 #include <cmath>
-#include "R2Graph/R2Graph.h"
 #include <cassert>
+#include "R2Graph/R2Graph.h"
 
 using namespace std;
 

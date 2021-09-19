@@ -5,13 +5,13 @@
 
 using namespace std;
 
-auto &CalculateOrthocenter(const R2Point &a, const R2Point &b, const R2Point &c)
+auto &calculateOrthocenter(const R2Point &a, const R2Point &b, const R2Point &c)
 {
-    R2Vector ab = (b - a).normal();
-    R2Vector ac = (c - a).normal();
+    R2Vector normalab = (b - a).normal();
+    R2Vector normalac = (c - a).normal();
     R2Point resultPoint;
 
-    intersectStraightLines(c, ab, b, ac, resultPoint);
+    intersectStraightLines(c, normalab, b, normalac, resultPoint);
     return resultPoint;
 }
 
@@ -22,7 +22,7 @@ int main()
     cin >> a >> b >> c;
     assert(cin.good());
 
-    auto result = CalculateOrthocenter(a, b, c);
+    auto result = calculateOrthocenter(a, b, c);
     cout << "Orthocenter point: " << result << endl;
 
     return 0;

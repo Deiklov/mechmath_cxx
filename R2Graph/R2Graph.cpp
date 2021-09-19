@@ -94,10 +94,3 @@ bool intersectStraightLines(
     intersection = q + w*t;
     return true;
 }
-
-double distanceToLine(
-    const R2Point& t,                   // Point
-    const R2Point& p, const R2Vector& v // Line: (p, v)
-) {
-    return t.distanceToLine(p, v);
-}

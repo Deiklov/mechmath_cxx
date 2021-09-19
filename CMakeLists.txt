@@ -9,4 +9,5 @@ set(GRAPH_LIB R2Graph/R2Graph.cpp)
 add_library(r2graph ${GRAPH_LIB})
 
 add_executable(lab1 ${SOURCE_EXE})
+
 target_link_libraries(lab1 r2graph)

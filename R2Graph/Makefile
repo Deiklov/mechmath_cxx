@@ -1,11 +1,8 @@
 CC = g++ $(CFLAGS)
-CFLAGS = -g -O0 -Wall
+CFLAGS = -O0 -g
 
-graphtst: graphtst.cpp R2Graph.o R2Graph.h
-	$(CC) -o graphtst graphtst.cpp R2Graph.o
-
-R2Graph.o: R2Graph.cpp R2Graph.h
-	$(CC) -c R2Graph.cpp
+inCircle: inCircle.cpp R2Graph.h R2Graph.cpp
+	$(CC) -o inCircle inCircle.cpp R2Graph.cpp
 
 clean:
-	rm -f *.o graphtst core*
+	rm -f inCircle *.o

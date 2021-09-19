@@ -1,2 +1,4 @@
 # mechmath_cxx
-labs on c++
+labs on c++ Романов Андрей  
+Инструкция по запуску  
+1. 

@@ -18,10 +18,9 @@
 // any window system (so called "Text" mode).
 
 #include <cmath>
-#include <cassert>
 #include <iostream>
 
-const double R2GRAPH_EPSILON = 1e-12;
+const double R2GRAPH_EPSILON = 0.0000001;
 
 class R2Vector {
 public:
@@ -49,22 +48,6 @@ public:
     }
 
     ~R2Vector() {}                              // Destructor
-
-    double operator[](int i) const {
-        assert(0 <= i && i < 2);
-        if (i == 0)
-           return x;
-        else
-           return y;
-    }
-
-    double& operator[](int i) {
-        assert(0 <= i && i < 2);
-        if (i == 0)
-           return x;
-        else
-           return y;
-    }
 
     R2Vector operator+(const R2Vector& v) const {
         return R2Vector(x+v.x, y+v.y);
@@ -116,13 +99,6 @@ public:
             y /= l;
         }
         return *this;
-    }
-
-    R2Vector normalized() const { // Return a vector with the same direction
-                                  // and unit length
-        R2Vector v = *this;
-        v.normalize();
-        return v;
     }
 
     R2Vector normal() const {           // Normal to this vector
@@ -197,22 +173,6 @@ public:
     }
 
     ~R2Point() {}                              // Destructor
-
-    double operator[](int i) const {
-        assert(0 <= i && i < 2);
-        if (i == 0)
-           return x;
-        else
-           return y;
-    }
-
-    double& operator[](int i) {
-        assert(0 <= i && i < 2);
-        if (i == 0)
-           return x;
-        else
-           return y;
-    }
 
     R2Point operator+(const R2Point& p) const {
         return R2Point(x+p.x, y+p.y);
@@ -550,22 +510,6 @@ public:
 
     ~I2Vector() {}                              // Destructor
 
-    int operator[](int i) const {
-        assert(0 <= i && i < 2);
-        if (i == 0)
-           return x;
-        else
-           return y;
-    }
-
-    int& operator[](int i) {
-        assert(0 <= i && i < 2);
-        if (i == 0)
-           return x;
-        else
-           return y;
-    }
-
     I2Vector operator+(const I2Vector& v) const {
         return I2Vector(x+v.x, y+v.y);
     }
@@ -902,11 +846,6 @@ inline bool intersectStraightLines(
         intersection
     );
 }
-
-double distanceToLine(
-    const R2Point& t,                           // Point
-    const R2Point& p, const R2Vector& v         // Straight line (p, v)
-);
 
 inline std::istream& operator>>(std::istream& str, R2Vector& v) {
     str >> v.x >> v.y;

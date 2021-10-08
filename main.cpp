@@ -5,7 +5,7 @@
 
 using namespace std;
 
-auto &calculateOrthocenter(const R2Point &a, const R2Point &b, const R2Point &c)
+auto calculateOrthocenter(const R2Point &a, const R2Point &b, const R2Point &c)
 {
     R2Vector normalab = (b - a).normal();
     R2Vector normalac = (c - a).normal();

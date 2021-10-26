@@ -1,8 +1,5 @@
 CC = g++ $(CXXFLAGS)
-CXXFLAGS=-std=c++2a -Wall
+CXXFLAGS=-std=c++17 -Wall -O0
 
 compile:
-	$(CC) -o orthocenter main.cpp R2Graph/R2Graph.cpp
-
-clean:
-	rm -f inCircle *.o
+	$(CC) -o earthdist main.cpp R3Graph/R3Graph.cpp

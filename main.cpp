@@ -7,7 +7,7 @@ using namespace R3Graph;
 const double EARTH_RADIUS = 6378000.0;
 const double PI = atan(1) * 4;  // через арктангенс определяем pi, atan(1)==pi/4
 
-auto radiusVector(double lat, double lon)
+R3Vector radiusVector(double lat, double lon)
 {
     double phi = lon * PI / 180.;
     double theta = lat * PI / 180.;
@@ -15,7 +15,7 @@ auto radiusVector(double lat, double lon)
     return R3Vector(cos(phi) * cosTheta, sin(phi) * cosTheta, sin(theta));
 }
 
-std::pair<double, double> earth2map(double mapLat, double mapLon, double lat, double lon)
+std::tuple<double, double> earth2map(double mapLat, double mapLon, double lat, double lon)
 {
     R3Vector ez(0., 0., 1.);
     R3Vector map_norm = radiusVector(mapLat, mapLon);
@@ -32,7 +32,7 @@ std::pair<double, double> earth2map(double mapLat, double mapLon, double lat, do
     R3Vector v_map = p - map_center;
     double x = v_map * map_x;
     double y = v_map * map_y;
-    return {x, y};
+    return std::make_tuple(x, y);
 }
 
 int main()
@@ -50,9 +50,10 @@ int main()
         std::cin >> lat >> lon;
         if ((!std::cin.good()))
             break;
-
-        auto [x, y] = earth2map(mapLat, mapLon, lat, lon);
-        std::cout << "coordinates on map: (" << x << ", " << y << ")" << std::endl;
+        std::tuple<double, double> coordinates;
+        coordinates = earth2map(mapLat, mapLon, lat, lon);
+        std::cout << "coordinates on map: (" << std::get<0>(coordinates) << ", "
+                  << std::get<1>(coordinates) << ")" << std::endl;
     }
     return 0;
 }

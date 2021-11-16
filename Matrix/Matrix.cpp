@@ -43,16 +43,34 @@ Matrix Matrix::operator/(const Matrix &b) const { return Matrix(); }
 
 Matrix Matrix::inverse() const { return Matrix(); }
 
-Matrix Matrix::gauss() const { return Matrix(); }
+int Matrix::gauss() { return 0; }
 
 double Matrix::determinant() const { return 0; }
+
+void Matrix::swapRows(int i, int k) {
+  if (i < 0 || i >= m || k < 0 || k >= n)
+    throw range_error("Incorrect indices of matrix rows");
+  for (int j = 0; j < n; ++j) {
+    double tmp = at(i, j);
+    at(i, j) = at(k, j);
+    at(k, j) = (-tmp);
+  }
+}
+
+void Matrix::addRows(int i, int k, double coeff) {
+  if (i < 0 || i >= m || k < 0 || k >= n)
+    throw range_error("Incorrect indices of matrix rows");
+  for (int j = 0; j < n; ++j) {
+    at(i, j) += at(k, j) * coeff;
+  }
+}
 
 ostream &operator<<(ostream &s, const Matrix &a) {
   int maxWidth = 0;
   for (int i = 0; i < a.rows(); ++i) {
     for (int j = 0; j < a.columns(); ++j) {
       ostringstream str;
-//      str.str().clear();
+      //      str.str().clear();
       str << a[i][j];
       int w = int(str.str().size());
       if (w > maxWidth) maxWidth = w;
@@ -64,7 +82,7 @@ ostream &operator<<(ostream &s, const Matrix &a) {
     for (int j = 0; j < a.columns(); ++j) {
       if (j > 0) s << " ";
       ostringstream str;
-//      str.str().clear();
+      //      str.str().clear();
       str << a[i][j];
       int w = int(str.str().size());
       if (w < maxWidth) {
@@ -78,6 +96,7 @@ ostream &operator<<(ostream &s, const Matrix &a) {
   }
   return s;
 }
+
 istream &operator>>(istream &s, Matrix &a) {
   for (int i = 0; s.good() && i < a.rows(); ++i) {
     for (int j = 0; s.good() && j < a.columns(); ++j) {

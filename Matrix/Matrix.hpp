@@ -48,7 +48,10 @@ class Matrix {
   Matrix operator*(const Matrix &b) const;
   Matrix operator/(const Matrix &b) const;
   Matrix inverse() const;
-  Matrix gauss() const;
+  void swapRows(int i, int k);
+  void addRows(int i, int k,double coeff);// line_i+=line_k*coeff;
+
+  int gauss() ;
   double determinant() const;
 
   Matrix &operator+=(const Matrix &b) {

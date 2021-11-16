@@ -1,13 +1,13 @@
 cmake_minimum_required(VERSION 3.17)
-project(lab2)
+project(lab3)
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 11)
 
-set(SOURCE_EXE main.cpp)
-set(GRAPH_LIB R3Graph/R3Graph.cpp)
+set(SOURCE_EXE main.cpp Matrix/Matrix.cpp Matrix/Matrix.hpp)
+set(GRAPH_LIB Matrix/Matrix.cpp)
 
-add_library(r3graph ${GRAPH_LIB})
+add_library(Matrix ${GRAPH_LIB})
 
-add_executable(lab2 ${SOURCE_EXE})
+add_executable(lab3 ${SOURCE_EXE})
 
-target_link_libraries(lab2 r3graph)
+target_link_libraries(lab3 Matrix)

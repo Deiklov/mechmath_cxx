@@ -25,6 +25,7 @@ void testInputOutput() {
 
     cout << " Row echelon form " << a.gauss() << endl;
     cout << a << endl;
+    cout << a.determinant() << endl;
   }
 }
 

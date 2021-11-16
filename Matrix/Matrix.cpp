@@ -78,7 +78,17 @@ int Matrix::gauss() {
   return i;
 }
 
-double Matrix::determinant() const { return 0; }
+double Matrix::determinant() const {
+  if (rows() != columns())
+    throw range_error("Determinant of non-square matrix is no exist");
+  Matrix a = *this;
+  a.gauss();
+  double res = 1.;
+  for (int i = 0; i < a.m; ++i) {
+    res *= a[i][i];
+  }
+  return res;
+}
 
 void Matrix::swapRows(int i, int k) {
   if (i < 0 || i >= m || k < 0 || k >= n)

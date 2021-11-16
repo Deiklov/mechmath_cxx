@@ -11,13 +11,15 @@
 using namespace std;
 
 class Matrix {
- public:
   int m;  // rows
   int n;  // columns
+ public:
+  int rows() const { return m; }
+  int columns() const { return n; }
   vector<double> elems;
-  Matrix(int num_rows = 1, int num_columns = 1)
+  explicit Matrix(int num_rows = 1, int num_columns = 1)
       : m(num_rows), n(num_columns), elems(m * n) {}
-  Matrix(const vector<double> &elements, int num_rows = 1, int num_columns = 1)
+  explicit Matrix(const vector<double> &elements, int num_rows, int num_columns)
       : m(num_rows), n(num_columns), elems(m * n) {
     for (int i = 0; i < m * n; ++i) {
       elems[i] = elements.at(i);
@@ -67,6 +69,6 @@ class Matrix {
   }
 };
 ostream &operator<<(ostream &s, const Matrix &a);
-istream &operator>>(ostream &s, Matrix &a);
+istream &operator>>(istream &s, Matrix &a);
 
 #endif

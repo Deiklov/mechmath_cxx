@@ -7,61 +7,66 @@
 
 #include <iostream>
 #include <vector>
+
 using namespace std;
-class Matrix
-{
-public:
-    Matrix(int, int);
-    Matrix(const vector<vector<double>> &, int, int);
-    Matrix();
-    Matrix(const Matrix &);
-    Matrix &operator=(const Matrix &);
 
-    inline double &operator()(int x, int y)
-    {
-        return p[x][y];
+class Matrix {
+ public:
+  int m;  // rows
+  int n;  // columns
+  vector<double> elems;
+  Matrix(int num_rows = 1, int num_columns = 1)
+      : m(num_rows), n(num_columns), elems(m * n) {}
+  Matrix(const vector<double> &elements, int num_rows = 1, int num_columns = 1)
+      : m(num_rows), n(num_columns), elems(m * n) {
+    for (int i = 0; i < m * n; ++i) {
+      elems[i] = elements.at(i);
     }
+  }
+  double &at(int i, int j) {
+    if (i < 0 || i >= m || j < 0 || j >= n) {
+      throw out_of_range("Matrix index out of bounds");
+    }
+    return elems[i * n + j];
+  }
+  const double *operator[](int i) const { return elems.data() + i * n; }
 
-    Matrix &operator+=(const Matrix &);
-    Matrix &operator-=(const Matrix &);
-    Matrix &operator*=(const Matrix &);
-    Matrix &operator*=(double);
-    Matrix &operator/=(double);
-    Matrix operator^(int);
+  double *operator[](int i) { return elems.data() + i * n; }
+  Matrix &reszie(int numRows, int numCols) {
+    elems.resize(numRows * numCols);
+    m = numRows;
+    n = numCols;
+    for (int i = 0; i < m * n; ++i) {
+      elems[i] = 0.;
+    }
+    return *this;
+  }
+  Matrix operator+(const Matrix &b) const;
+  Matrix operator-(const Matrix &b) const;
+  Matrix operator*(const Matrix &b) const;
+  Matrix operator/(const Matrix &b) const;
+  Matrix inverse() const;
+  Matrix gauss() const;
+  double determinant() const;
 
-    friend std::ostream &operator<<(std::ostream &, const Matrix &);
-    friend std::istream &operator>>(std::istream &, Matrix &);
-
-    void swapRows(int, int);
-    Matrix transpose();
-
-    static Matrix createIdentity(int);
-    static Matrix solve(Matrix, Matrix);
-    static Matrix bandSolve(Matrix, Matrix, int);
-
-    // functions on vectors
-    static double dotProduct(Matrix, Matrix);
-
-    // functions on augmented matrices
-    static Matrix augment(Matrix, Matrix);
-    Matrix gaussianEliminate();
-    Matrix rowReduceFromGaussian();
-    void readSolutionsFromRREF(std::ostream &os);
-    Matrix inverse();
-
-private:
-    int rows_, cols_;
-    vector<vector<double>> p;
-
-    void allocSpace();
-    Matrix expHelper(const Matrix &, int);
+  Matrix &operator+=(const Matrix &b) {
+    if (m != b.m || n != b.n) {
+      throw range_error("Sum of matrices of different dimension");
+    }
+    Matrix c = *this + b;
+    *this = c;
+    return *this;
+  }
+  Matrix &operator-=(const Matrix &b) {
+    if (m != b.m || n != b.n) {
+      throw range_error("Subtraction of matrices of different dimension");
+    }
+    Matrix c = *this - b;
+    *this = c;
+    return *this;
+  }
 };
-
-Matrix operator+(const Matrix &, const Matrix &);
-Matrix operator-(const Matrix &, const Matrix &);
-Matrix operator*(const Matrix &, const Matrix &);
-Matrix operator*(const Matrix &, double);
-Matrix operator*(double, const Matrix &);
-Matrix operator/(const Matrix &, double);
+ostream &operator<<(ostream &s, const Matrix &a);
+istream &operator>>(ostream &s, Matrix &a);
 
 #endif

@@ -1,6 +1,4 @@
-#include <cmath>
 #include <iostream>
-#include <vector>
 
 #include "Matrix/Matrix.hpp"
 
@@ -23,6 +21,10 @@ void testInputOutput() {
     }
     cout << "Matrix:" << endl;
     cout << a;
+    cout << "------------" << endl;
+
+    cout << " Row echelon form " << a.gauss() << endl;
+    cout << a << endl;
   }
 }
 

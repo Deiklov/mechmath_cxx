@@ -9,6 +9,7 @@
 #include <vector>
 
 using namespace std;
+const double MATRIX_EPS = 1e-12;
 
 class Matrix {
   int m;  // rows
@@ -49,9 +50,9 @@ class Matrix {
   Matrix operator/(const Matrix &b) const;
   Matrix inverse() const;
   void swapRows(int i, int k);
-  void addRows(int i, int k,double coeff);// line_i+=line_k*coeff;
+  void addRows(int i, int k, double coeff);  // line_i+=line_k*coeff;
 
-  int gauss() ;
+  int gauss();
   double determinant() const;
 
   Matrix &operator+=(const Matrix &b) {

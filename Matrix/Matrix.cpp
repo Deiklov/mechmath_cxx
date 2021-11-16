@@ -43,7 +43,40 @@ Matrix Matrix::operator/(const Matrix &b) const { return Matrix(); }
 
 Matrix Matrix::inverse() const { return Matrix(); }
 
-int Matrix::gauss() { return 0; }
+int Matrix::gauss() {
+  int i = 0;
+  int j = 0;
+  while (i < m && j < n) {
+    double maxValue = fabs(at(i, j));
+    int maxRow = i;
+    for (int k = i + 1; k < m; ++k) {
+      if (fabs(at(k, j)) > maxValue) {
+        maxValue = fabs(at(k, j));
+        maxRow = k;
+      }
+    }
+    if (maxValue <= MATRIX_EPS) {
+      for (int k = i; k < m; ++k) {
+        at(k, j) = 0.;
+      }
+      ++j;
+      continue;
+    }
+    assert(fabs(at(maxRow, j)) > MATRIX_EPS);
+    if (maxRow != i) {
+      swapRows(i, maxRow);
+    }
+    assert(fabs(at(i, j)) > MATRIX_EPS);
+    double r = at(i, j);
+    for (int k = i + 1; k < m; ++k) {
+      addRows(k, i, -at(k, j) / r);
+      at(k, j);
+    }
+    ++i;
+    ++j;
+  }
+  return i;
+}
 
 double Matrix::determinant() const { return 0; }
 
@@ -65,13 +98,18 @@ void Matrix::addRows(int i, int k, double coeff) {
   }
 }
 
+double round_up(const double value, const int decimal_places = 6) {
+  const double multiplier = pow(10.0, decimal_places);
+  return ceil(value * multiplier) / multiplier;
+}
+
 ostream &operator<<(ostream &s, const Matrix &a) {
   int maxWidth = 0;
   for (int i = 0; i < a.rows(); ++i) {
     for (int j = 0; j < a.columns(); ++j) {
       ostringstream str;
       //      str.str().clear();
-      str << a[i][j];
+      str << round_up(a[i][j]);
       int w = int(str.str().size());
       if (w > maxWidth) maxWidth = w;
       str.str().clear();
@@ -83,7 +121,7 @@ ostream &operator<<(ostream &s, const Matrix &a) {
       if (j > 0) s << " ";
       ostringstream str;
       //      str.str().clear();
-      str << a[i][j];
+      str << round_up(a[i][j]);
       int w = int(str.str().size());
       if (w < maxWidth) {
         for (int k = 0; k < maxWidth - w; ++k) {

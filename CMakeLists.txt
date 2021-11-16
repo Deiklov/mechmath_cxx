@@ -1,13 +1,10 @@
 cmake_minimum_required(VERSION 3.17)
-project(lab3)
+project(lab4)
 
 set(CMAKE_CXX_STANDARD 11)
 
-set(SOURCE_EXE main.cpp Matrix/Matrix.cpp Matrix/Matrix.hpp)
-set(GRAPH_LIB Matrix/Matrix.cpp)
+set(SOURCE_EXE main.cpp)
 
-add_library(Matrix ${GRAPH_LIB})
+add_executable(lab4 ${SOURCE_EXE})
 
-add_executable(lab3 ${SOURCE_EXE})
-
-target_link_libraries(lab3 Matrix)
+target_link_libraries(lab4 Sorts)

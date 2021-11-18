@@ -15,7 +15,7 @@ std::vector<double>* tmpMemory = 0   // Temporary memory to use
 Инструкция по запуску
 
 1. make compile
-2. ./merger
+2. ./sorts
 
 Второй вариант:  
 Через cmake

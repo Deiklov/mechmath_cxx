@@ -7,4 +7,3 @@ set(SOURCE_EXE main.cpp)
 
 add_executable(lab4 ${SOURCE_EXE})
 
-target_link_libraries(lab4 Sorts)

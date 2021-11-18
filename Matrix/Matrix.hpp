@@ -26,6 +26,11 @@ class Matrix {
       elems[i] = elements.at(i);
     }
   }
+  Matrix augment(Matrix A, Matrix B);
+  Matrix createIdentity(size_t size);
+  Matrix solveSLAU(Matrix b);
+  Matrix gaussianEliminate();
+  Matrix rowReduceFromGaussian();
   double &at(int i, int j) {
     if (i < 0 || i >= m || j < 0 || j >= n) {
       throw out_of_range("Matrix index out of bounds");
@@ -48,7 +53,7 @@ class Matrix {
   Matrix operator-(const Matrix &b) const;
   Matrix operator*(const Matrix &b) const;
   Matrix operator/(const Matrix &b) const;
-  Matrix inverse() const;
+  Matrix inverse();
   void swapRows(int i, int k);
   void addRows(int i, int k, double coeff);  // line_i+=line_k*coeff;
 

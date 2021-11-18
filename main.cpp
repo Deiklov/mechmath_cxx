@@ -22,8 +22,10 @@ void testInputOutput() {
     cout << "Matrix:" << endl;
     cout << a;
     cout << "------------" << endl;
-
-    cout << " Row echelon form " << a.gauss() << endl;
+    vector<double> vect{1, 2, 3};
+    //    auto solution = a.solveSLAU(Matrix(vect, 3, 1));
+    auto inverse = a.inverse();
+    cout << "Inverse matrix" << inverse << endl;
     cout << a << endl;
     cout << a.determinant() << endl;
   }

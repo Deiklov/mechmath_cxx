@@ -41,7 +41,21 @@ Matrix Matrix::operator*(const Matrix &b) const {
 
 Matrix Matrix::operator/(const Matrix &b) const { return Matrix(); }
 
-Matrix Matrix::inverse() const { return Matrix(); }
+Matrix Matrix::inverse() {
+  Matrix I = createIdentity(rows());
+  Matrix AI = augment(*this, I);
+  Matrix U = AI.gaussianEliminate();
+  cout << "U" << endl << U << endl;
+  Matrix IAInverse = U.rowReduceFromGaussian();
+  cout << "IAInverse" << endl << IAInverse << endl;
+  Matrix AInverse(rows(), columns());
+  for (int i = 0; i < AInverse.rows(); ++i) {
+    for (int j = 0; j < AInverse.columns(); ++j) {
+      AInverse[i][j] = IAInverse[i][j + columns()];
+    }
+  }
+  return AInverse;
+}
 
 int Matrix::gauss() {
   int i = 0;
@@ -106,6 +120,165 @@ void Matrix::addRows(int i, int k, double coeff) {
   for (int j = 0; j < n; ++j) {
     at(i, j) += at(k, j) * coeff;
   }
+}
+// дописать справа вторую матрицу
+Matrix Matrix::augment(Matrix A, Matrix B) {
+  Matrix AB(A.rows(), A.columns() + B.columns());
+  for (int i = 0; i < AB.rows(); ++i) {
+    for (int j = 0; j < AB.columns(); ++j) {
+      if (j < A.columns())
+        AB[i][j] = A[i][j];
+      else
+        AB[i][j] = B[i][j - B.columns()];
+    }
+  }
+  return AB;
+}
+
+Matrix Matrix::createIdentity(size_t size) {
+  Matrix temp(size, size);
+  for (int i = 0; i < temp.rows(); ++i) {
+    for (int j = 0; j < temp.columns(); ++j) {
+      if (i == j) {
+        temp[i][j] = 1;
+      } else {
+        temp[i][j] = 0;
+      }
+    }
+  }
+  return temp;
+}
+Matrix Matrix::solveSLAU(Matrix b) {
+  // Gaussian elimination
+  for (int i = 0; i < (*this).rows(); ++i) {
+    if ((*this)[i][i] == 0) {
+      // pivot 0 - throw error
+      throw domain_error(
+          "Error: the coefficient matrix has 0 as (*this) pivot. Please fix "
+          "the input and try again.");
+    }
+    for (int j = i + 1; j < (*this).rows(); ++j) {
+      for (int k = i + 1; k < (*this).columns(); ++k) {
+        (*this)[j][k] -= (*this)[i][k] * ((*this)[j][i] / (*this)[i][i]);
+        if ((*this)[j][k] < MATRIX_EPS && (*this)[j][k] > -1 * MATRIX_EPS)
+          (*this)[j][k] = 0;
+      }
+      b[j][0] -= b[i][0] * ((*this)[j][i] / (*this)[i][i]);
+      if ((*this)[j][0] < MATRIX_EPS && (*this)[j][0] > -1 * MATRIX_EPS)
+        (*this)[j][0] = 0;
+      (*this)[j][i] = 0;
+    }
+  }
+  // Back substitution
+  Matrix x(b.rows(), 1);
+  x[x.rows() - 1][0] = b[x.rows() - 1][0] / (*this)[x.rows() - 1][x.rows() - 1];
+  if (x[x.rows() - 1][0] < MATRIX_EPS && x[x.rows() - 1][0] > -1 * MATRIX_EPS)
+    x[x.rows() - 1][0] = 0;
+  for (int i = x.rows() - 2; i >= 0; --i) {
+    double sum = 0;
+    for (int j = i + 1; j < x.rows(); ++j) {
+      sum += (*this)[i][j] * x[j][0];
+    }
+    x[i][0] = (b[i][0] - sum) / (*this)[i][i];
+    if (x[i][0] < MATRIX_EPS && x[i][0] > -1 * MATRIX_EPS) x[i][0] = 0;
+  }
+
+  return x;
+}
+Matrix Matrix::gaussianEliminate() {
+  Matrix Ab(*this);
+  int rows = Ab.rows();
+  int cols = Ab.columns();
+  int Acols = cols - 1;
+
+  int i = 0;  // row tracker
+  int j = 0;  // column tracker
+
+  // iterate through the rows
+  while (i < rows) {
+    // find a pivot for the row
+    bool pivot_found = false;
+    while (j < Acols && !pivot_found) {
+      if (Ab[i][j] != 0) {  // pivot not equal to 0
+        pivot_found = true;
+      } else {  // check for a possible swap
+        int max_row = i;
+        double max_val = 0;
+        for (int k = i + 1; k < rows; ++k) {
+          double cur_abs = Ab[k][j] >= 0 ? Ab[k][j] : -1 * Ab[k][j];
+          if (cur_abs > max_val) {
+            max_row = k;
+            max_val = cur_abs;
+          }
+        }
+        if (max_row != i) {
+          Ab.swapRows(max_row, i);
+          pivot_found = true;
+        } else {
+          j++;
+        }
+      }
+    }
+
+    // perform elimination as normal if pivot was found
+    if (pivot_found) {
+      for (int t = i + 1; t < rows; ++t) {
+        for (int s = j + 1; s < cols; ++s) {
+          Ab[t][s] = Ab[t][s] - Ab[i][s] * (Ab[t][j] / Ab[i][j]);
+          if (Ab[t][s] < MATRIX_EPS && Ab[t][s] > -1 * MATRIX_EPS) Ab[t][s] = 0;
+        }
+        Ab[t][j] = 0;
+      }
+    }
+
+    i++;
+    j++;
+  }
+
+  return Ab;
+}
+Matrix Matrix::rowReduceFromGaussian() {
+  Matrix R(this->elems, this->rows(), this->columns());
+  int rows = R.rows();
+  int cols = R.columns();
+
+  int i = rows - 1;  // row tracker
+  int j = cols - 2;  // column tracker
+
+  // iterate through every row
+  while (i >= 0) {
+    // find the pivot column
+    int k = j - 1;
+    while (k >= 0) {
+      if (R[i][k] != 0) j = k;
+      k--;
+    }
+
+    // zero out elements above pivots if pivot not 0
+    if (R[i][j] != 0) {
+      for (int t = i - 1; t >= 0; --t) {
+        for (int s = 0; s < cols; ++s) {
+          if (s != j) {
+            R[t][s] = R[t][s] - R[i][s] * (R[t][j] / R[i][j]);
+            if (R[t][s] < MATRIX_EPS && R[t][s] > -1 * MATRIX_EPS) R[t][s] = 0;
+          }
+        }
+        R[t][j] = 0;
+      }
+
+      // divide row by pivot
+      for (int k = j + 1; k < cols; ++k) {
+        R[i][k] = R[i][k] / R[i][j];
+        if (R[i][k] < MATRIX_EPS && R[i][k] > -1 * MATRIX_EPS) R[i][k] = 0;
+      }
+      R[i][j] = 1;
+    }
+
+    i--;
+    j--;
+  }
+
+  return R;
 }
 
 double round_up(const double value, const int decimal_places = 6) {

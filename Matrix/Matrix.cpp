@@ -2,52 +2,13 @@
 
 #include <sstream>
 
-Matrix Matrix::operator+(const Matrix &b) const {
-  if (rows() != b.rows() || columns() != b.columns()) {
-    throw range_error("Sum of matrices of different dimension");
-  }
-  Matrix res(m, n);
-  for (int i = 0; i < m * n; ++i) {
-    res.elems[i] = elems[i] + b.elems[i];
-  }
-  return res;
-}
-
-Matrix Matrix::operator-(const Matrix &b) const {
-  if (rows() != b.rows() || columns() != b.columns()) {
-    throw range_error("Substrate of matrices of different dimension");
-  }
-  Matrix res(m, n);
-  for (int i = 0; i < m * n; ++i) {
-    res.elems[i] = elems[i] - b.elems[i];
-  }
-  return res;
-}
-
-Matrix Matrix::operator*(const Matrix &b) const {
-  if (columns() != b.rows())
-    throw range_error("Product of matrices of incorrect dimension");
-  Matrix res(m, b.n);
-  for (int i = 0; i < res.m; ++i) {
-    for (int j = 0; j < res.n; ++j) {
-      res[i][j] = 0.;
-      for (int k = 0; k < n; ++k) {
-        res[i][j] += (*this)[i][k] * b[k][j];
-      }
-    }
-  }
-  return res;
-}
-
-Matrix Matrix::operator/(const Matrix &b) const { return Matrix(); }
-
-Matrix Matrix::inverse() {
-  Matrix I = createIdentity(rows());
-  Matrix AI = augment(*this, I);
+Matrix Matrix::inverse() const {
+  Matrix Id = createIdentity(rows());
+  Matrix AI = augment(Id);
   Matrix U = AI.gaussianEliminate();
-  cout << "U" << endl << U << endl;
+  //  cout << "U" << endl << U << endl;
   Matrix IAInverse = U.rowReduceFromGaussian();
-  cout << "IAInverse" << endl << IAInverse << endl;
+  //  cout << "IAInverse" << endl << IAInverse << endl;
   Matrix AInverse(rows(), columns());
   for (int i = 0; i < AInverse.rows(); ++i) {
     for (int j = 0; j < AInverse.columns(); ++j) {
@@ -57,49 +18,49 @@ Matrix Matrix::inverse() {
   return AInverse;
 }
 
-int Matrix::gauss() {
-  int i = 0;
-  int j = 0;
-  while (i < m && j < n) {
-    double maxValue = fabs(at(i, j));
-    int maxRow = i;
-    for (int k = i + 1; k < m; ++k) {
-      if (fabs(at(k, j)) > maxValue) {
-        maxValue = fabs(at(k, j));
-        maxRow = k;
-      }
-    }
-    if (maxValue <= MATRIX_EPS) {
-      for (int k = i; k < m; ++k) {
-        at(k, j) = 0.;
-      }
-      ++j;
-      continue;
-    }
-    assert(fabs(at(maxRow, j)) > MATRIX_EPS);
-    if (maxRow != i) {
-      swapRows(i, maxRow);
-    }
-    assert(fabs(at(i, j)) > MATRIX_EPS);
-    double r = at(i, j);
-    for (int k = i + 1; k < m; ++k) {
-      addRows(k, i, -at(k, j) / r);
-      at(k, j);
-    }
-    ++i;
-    ++j;
-  }
-  return i;
-}
+// int Matrix::gauss() {
+//   int i = 0;
+//   int j = 0;
+//   while (i < m && j < n) {
+//     double maxValue = fabs(at(i, j));
+//     int maxRow = i;
+//     for (int k = i + 1; k < m; ++k) {
+//       if (fabs(at(k, j)) > maxValue) {
+//         maxValue = fabs(at(k, j));
+//         maxRow = k;
+//       }
+//     }
+//     if (maxValue <= MATRIX_EPS) {
+//       for (int k = i; k < m; ++k) {
+//         at(k, j) = 0.;
+//       }
+//       ++j;
+//       continue;
+//     }
+//     assert(fabs(at(maxRow, j)) > MATRIX_EPS);
+//     if (maxRow != i) {
+//       swapRows(i, maxRow);
+//     }
+//     assert(fabs(at(i, j)) > MATRIX_EPS);
+//     double r = at(i, j);
+//     for (int k = i + 1; k < m; ++k) {
+//       addRows(k, i, -at(k, j) / r);
+//       at(k, j);
+//     }
+//     ++i;
+//     ++j;
+//   }
+//   return i;
+// }
 
 double Matrix::determinant() const {
   if (rows() != columns())
     throw range_error("Determinant of non-square matrix is no exist");
   Matrix a = *this;
-  a.gauss();
+  auto a2 = a.gaussianEliminate();
   double res = 1.;
   for (int i = 0; i < a.m; ++i) {
-    res *= a[i][i];
+    res *= a2[i][i];
   }
   return res;
 }
@@ -114,15 +75,17 @@ void Matrix::swapRows(int i, int k) {
   }
 }
 
-void Matrix::addRows(int i, int k, double coeff) {
-  if (i < 0 || i >= m || k < 0 || k >= n)
-    throw range_error("Incorrect indices of matrix rows");
-  for (int j = 0; j < n; ++j) {
-    at(i, j) += at(k, j) * coeff;
-  }
-}
+// void Matrix::addRows(int i, int k, double coeff) {
+//   if (i < 0 || i >= m || k < 0 || k >= n)
+//     throw range_error("Incorrect indices of matrix rows");
+//   for (int j = 0; j < n; ++j) {
+//     at(i, j) += at(k, j) * coeff;
+//   }
+// }
+
 // дописать справа вторую матрицу
-Matrix Matrix::augment(Matrix A, Matrix B) {
+Matrix Matrix::augment(Matrix B) const {
+  Matrix A = *this;
   Matrix AB(A.rows(), A.columns() + B.columns());
   for (int i = 0; i < AB.rows(); ++i) {
     for (int j = 0; j < AB.columns(); ++j) {
@@ -135,57 +98,44 @@ Matrix Matrix::augment(Matrix A, Matrix B) {
   return AB;
 }
 
-Matrix Matrix::createIdentity(size_t size) {
-  Matrix temp(size, size);
-  for (int i = 0; i < temp.rows(); ++i) {
-    for (int j = 0; j < temp.columns(); ++j) {
-      if (i == j) {
-        temp[i][j] = 1;
-      } else {
-        temp[i][j] = 0;
-      }
-    }
-  }
-  return temp;
-}
-Matrix Matrix::solveSLAU(Matrix b) {
+Matrix Matrix::solveSLE(Matrix b) const {
   // Gaussian elimination
-  for (int i = 0; i < (*this).rows(); ++i) {
-    if ((*this)[i][i] == 0) {
+  auto A = Matrix(this->elems, this->rows(), this->columns());
+  for (int i = 0; i < A.rows(); ++i) {
+    if (A[i][i] == 0) {
       // pivot 0 - throw error
       throw domain_error(
-          "Error: the coefficient matrix has 0 as (*this) pivot. Please fix "
+          "Error: the coefficient matrix has 0 as A pivot. Please fix "
           "the input and try again.");
     }
-    for (int j = i + 1; j < (*this).rows(); ++j) {
-      for (int k = i + 1; k < (*this).columns(); ++k) {
-        (*this)[j][k] -= (*this)[i][k] * ((*this)[j][i] / (*this)[i][i]);
-        if ((*this)[j][k] < MATRIX_EPS && (*this)[j][k] > -1 * MATRIX_EPS)
-          (*this)[j][k] = 0;
+    for (int j = i + 1; j < A.rows(); ++j) {
+      for (int k = i + 1; k < A.columns(); ++k) {
+        A[j][k] -= A[i][k] * (A[j][i] / A[i][i]);
+        if (A[j][k] < MATRIX_EPS && A[j][k] > -1 * MATRIX_EPS) A[j][k] = 0;
       }
-      b[j][0] -= b[i][0] * ((*this)[j][i] / (*this)[i][i]);
-      if ((*this)[j][0] < MATRIX_EPS && (*this)[j][0] > -1 * MATRIX_EPS)
-        (*this)[j][0] = 0;
-      (*this)[j][i] = 0;
+      b[j][0] -= b[i][0] * (A[j][i] / A[i][i]);
+      if (A[j][0] < MATRIX_EPS && A[j][0] > -1 * MATRIX_EPS) A[j][0] = 0;
+      A[j][i] = 0;
     }
   }
   // Back substitution
   Matrix x(b.rows(), 1);
-  x[x.rows() - 1][0] = b[x.rows() - 1][0] / (*this)[x.rows() - 1][x.rows() - 1];
+  x[x.rows() - 1][0] = b[x.rows() - 1][0] / A[x.rows() - 1][x.rows() - 1];
   if (x[x.rows() - 1][0] < MATRIX_EPS && x[x.rows() - 1][0] > -1 * MATRIX_EPS)
     x[x.rows() - 1][0] = 0;
   for (int i = x.rows() - 2; i >= 0; --i) {
     double sum = 0;
     for (int j = i + 1; j < x.rows(); ++j) {
-      sum += (*this)[i][j] * x[j][0];
+      sum += A[i][j] * x[j][0];
     }
-    x[i][0] = (b[i][0] - sum) / (*this)[i][i];
+    x[i][0] = (b[i][0] - sum) / A[i][i];
     if (x[i][0] < MATRIX_EPS && x[i][0] > -1 * MATRIX_EPS) x[i][0] = 0;
   }
 
   return x;
 }
-Matrix Matrix::gaussianEliminate() {
+
+Matrix Matrix::gaussianEliminate() const {
   Matrix Ab(*this);
   int rows = Ab.rows();
   int cols = Ab.columns();
@@ -237,7 +187,8 @@ Matrix Matrix::gaussianEliminate() {
 
   return Ab;
 }
-Matrix Matrix::rowReduceFromGaussian() {
+
+Matrix Matrix::rowReduceFromGaussian() const {
   Matrix R(this->elems, this->rows(), this->columns());
   int rows = R.rows();
   int cols = R.columns();
@@ -279,6 +230,20 @@ Matrix Matrix::rowReduceFromGaussian() {
   }
 
   return R;
+}
+// создаем единиичную матрицу
+Matrix Matrix::createIdentity(int size) {
+  Matrix temp(size, size);
+  for (int i = 0; i < temp.rows(); ++i) {
+    for (int j = 0; j < temp.columns(); ++j) {
+      if (i == j) {
+        temp[i][j] = 1;
+      } else {
+        temp[i][j] = 0;
+      }
+    }
+  }
+  return temp;
 }
 
 double round_up(const double value, const int decimal_places = 6) {
@@ -325,4 +290,56 @@ istream &operator>>(istream &s, Matrix &a) {
     }
   }
   return s;
+}
+
+Matrix Matrix::operator+(const Matrix &b) const {
+  if (rows() != b.rows() || columns() != b.columns()) {
+    throw range_error("Sum of matrices of different dimension");
+  }
+  Matrix res(m, n);
+  for (int i = 0; i < m * n; ++i) {
+    res.elems[i] = elems[i] + b.elems[i];
+  }
+  return res;
+}
+
+Matrix Matrix::operator-(const Matrix &b) const {
+  if (rows() != b.rows() || columns() != b.columns()) {
+    throw range_error("Substrate of matrices of different dimension");
+  }
+  Matrix res(m, n);
+  for (int i = 0; i < m * n; ++i) {
+    res.elems[i] = elems[i] - b.elems[i];
+  }
+  return res;
+}
+
+Matrix Matrix::operator*(const Matrix &b) const {
+  if (columns() != b.rows())
+    throw range_error("Product of matrices of incorrect dimension");
+  Matrix res(m, b.n);
+  for (int i = 0; i < res.m; ++i) {
+    for (int j = 0; j < res.n; ++j) {
+      res[i][j] = 0.;
+      for (int k = 0; k < n; ++k) {
+        res[i][j] += (*this)[i][k] * b[k][j];
+      }
+    }
+  }
+  return res;
+}
+int Matrix::rank() const {
+  Matrix A = this->gaussianEliminate();
+  int rank = 0;
+
+  for (int i = 0; i < A.rows(); ++i) {
+    for (int j = 0; j < A.columns(); ++j) {
+      if (A[i][j] != 0) {
+        rank++;
+        break;
+      }
+    }
+  }
+
+  return rank;
 }

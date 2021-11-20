@@ -18,41 +18,6 @@ Matrix Matrix::inverse() const {
   return AInverse;
 }
 
-// int Matrix::gauss() {
-//   int i = 0;
-//   int j = 0;
-//   while (i < m && j < n) {
-//     double maxValue = fabs(at(i, j));
-//     int maxRow = i;
-//     for (int k = i + 1; k < m; ++k) {
-//       if (fabs(at(k, j)) > maxValue) {
-//         maxValue = fabs(at(k, j));
-//         maxRow = k;
-//       }
-//     }
-//     if (maxValue <= MATRIX_EPS) {
-//       for (int k = i; k < m; ++k) {
-//         at(k, j) = 0.;
-//       }
-//       ++j;
-//       continue;
-//     }
-//     assert(fabs(at(maxRow, j)) > MATRIX_EPS);
-//     if (maxRow != i) {
-//       swapRows(i, maxRow);
-//     }
-//     assert(fabs(at(i, j)) > MATRIX_EPS);
-//     double r = at(i, j);
-//     for (int k = i + 1; k < m; ++k) {
-//       addRows(k, i, -at(k, j) / r);
-//       at(k, j);
-//     }
-//     ++i;
-//     ++j;
-//   }
-//   return i;
-// }
-
 double Matrix::determinant() const {
   if (rows() != columns())
     throw range_error("Determinant of non-square matrix is no exist");
@@ -75,15 +40,6 @@ void Matrix::swapRows(int i, int k) {
   }
 }
 
-// void Matrix::addRows(int i, int k, double coeff) {
-//   if (i < 0 || i >= m || k < 0 || k >= n)
-//     throw range_error("Incorrect indices of matrix rows");
-//   for (int j = 0; j < n; ++j) {
-//     at(i, j) += at(k, j) * coeff;
-//   }
-// }
-
-// дописать справа вторую матрицу
 Matrix Matrix::augment(Matrix B) const {
   Matrix A = *this;
   Matrix AB(A.rows(), A.columns() + B.columns());
@@ -231,7 +187,7 @@ Matrix Matrix::rowReduceFromGaussian() const {
 
   return R;
 }
-// создаем единиичную матрицу
+
 Matrix Matrix::createIdentity(int size) {
   Matrix temp(size, size);
   for (int i = 0; i < temp.rows(); ++i) {
@@ -328,6 +284,7 @@ Matrix Matrix::operator*(const Matrix &b) const {
   }
   return res;
 }
+
 int Matrix::rank() const {
   Matrix A = this->gaussianEliminate();
   int rank = 0;

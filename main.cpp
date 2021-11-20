@@ -78,7 +78,7 @@ void testInputOutput() {
 }
 
 int main() {
-  //    testInputOutput();
-  testPredefinedValues();
+  testInputOutput();
+  //  testPredefinedValues();
   return 0;
 }

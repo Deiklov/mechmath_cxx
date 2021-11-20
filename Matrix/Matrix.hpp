@@ -53,7 +53,7 @@ class Matrix {
   Matrix operator-(const Matrix &b) const;
   Matrix operator*(const Matrix &b) const;
   Matrix inverse() const;
-  int rank() const ;
+  int rank() const;
 
   void swapRows(int i, int k);
 

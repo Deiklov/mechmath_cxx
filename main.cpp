@@ -17,6 +17,7 @@ void fullHandler(Matrix& A, vector<double>& bvect) {
     cout << "------------" << endl;
     cout << "Inverse of A" << endl;
     cout << A.inverse() << endl;
+    cout << "------------" << endl;
   }
 
   cout << "Add A+A:" << endl;
@@ -33,6 +34,7 @@ void fullHandler(Matrix& A, vector<double>& bvect) {
   cout << "------------" << endl;
   cout << "Rank of A" << endl;
   cout << A.rank() << endl;
+  cout << "------------" << endl;
 
   auto lmda = [&bvect](ostream& os) -> ostream& {
     for (auto v : bvect) {

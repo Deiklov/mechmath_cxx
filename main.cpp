@@ -34,7 +34,7 @@ void fullHandler(Matrix& A, vector<double>& bvect) {
   cout << "Rank of A" << endl;
   cout << A.rank() << endl;
 
-  auto lmda = [&bvect](std::ostream& os) -> std::ostream& {
+  auto lmda = [&bvect](ostream& os) -> ostream& {
     for (auto v : bvect) {
       cout << v << " ";
     }

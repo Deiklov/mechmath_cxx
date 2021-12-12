@@ -1,7 +1,6 @@
 #include <iostream>
 #include <map>
 #include <vector>
-// #include <pair>
 #include <algorithm>
 
 #include "utf8//utf8.h"
@@ -25,6 +24,7 @@ class Bigram {
     //            (bigram[0] == b.bigram[0] && bigram[1] < b.bigram[1]));
   }
 };
+
 bool compareCharPairs(const pair<int, int>& p0, const pair<int, int>& p1) {
   if (p0.first > p1.first) return true;
   if (p0.first < p1.first) return false;
@@ -32,6 +32,7 @@ bool compareCharPairs(const pair<int, int>& p0, const pair<int, int>& p1) {
   int c1 = compareRussianLetters(p0.second, p1.second);
   return c1 < 0;
 }
+
 bool compareBigramPairs(const pair<int, Bigram>& p0,
                         const pair<int, Bigram>& p1) {
   if (p0.first > p1.first) return true;

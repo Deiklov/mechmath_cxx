@@ -1,131 +1,117 @@
-#include <algorithm>
-#include <cassert>
-#include <cctype>
 #include <iostream>
 #include <map>
-#include <string>
 #include <vector>
+// #include <pair>
+#include <algorithm>
 
-#include "utf8/utf8.h"
+#include "utf8//utf8.h"
 
 using namespace std;
-
-typedef int unicodeChar;
-typedef basic_string<unicodeChar> unicodeString;
-
-bool comparePairs(  // Return true iff x < y
-    const pair<unicodeString, int>& x, const pair<unicodeString, int>& y);
-
-ostream& operator<<(ostream& s, const unicodeString& txt);
-
-bool operator<(const unicodeString& s1, const unicodeString& s2);
+class Bigram {
+ public:
+  int bigram[2];
+  explicit Bigram(int first = 0, int second = 0) {
+    bigram[0] = first;
+    bigram[1] = second;
+  }
+  bool operator<(const Bigram& b) const {
+    int c1 = compareRussianLetters(bigram[0], b.bigram[0]);
+    if (c1 < 0) return true;
+    if (c1 > 0) return false;
+    assert(c1 == 0);
+    int c2 = compareRussianLetters(bigram[1], b.bigram[1]);
+    return c2 < 0;
+    //    return (bigram[0] < b.bigram[0] ||
+    //            (bigram[0] == b.bigram[0] && bigram[1] < b.bigram[1]));
+  }
+};
+bool compareCharPairs(const pair<int, int>& p0, const pair<int, int>& p1) {
+  if (p0.first > p1.first) return true;
+  if (p0.first < p1.first) return false;
+  assert(p0.first == p1.first);
+  int c1 = compareRussianLetters(p0.second, p1.second);
+  return c1 < 0;
+}
+bool compareBigramPairs(const pair<int, Bigram>& p0,
+                        const pair<int, Bigram>& p1) {
+  if (p0.first > p1.first) return true;
+  if (p0.first < p1.first) return false;
+  assert(p0.first == p1.first);
+  return p0.second < p1.second;
+}
 
 int main() {
-  int state = 0;  // 0 between words, 1 inside a word
-  unicodeString word;
-  map<unicodeString, int> words;
-  while (true) {
-    bool readFails = false;
-    unicodeChar c;
-    // cin >> c;
-    c = unicodeChar(get_utf8_code_point(cin, readFails));
-    if (readFails) break;
-    bool letter = isRussianLetter(c);
-    if (state == 0) {  // Between words
-      if (letter) {
-        word.clear();
-        word += unicodeChar(toLowerLetter(c));
-        state = 1;  // Reading a word
+  int totalChars = 0;
+  map<int, int> alphabet;
+  map<Bigram, int> bigrams;
+  bool fails = false;
+  int previousLetter = -1;
+  int bigramsDetected = 0;
+  while (!fails) {
+    int codePoint = get_utf8_code_point(cin, fails);
+    if (isRussianLetter(codePoint)) {
+      ++totalChars;
+      codePoint = toUpperLetter(codePoint);
+      if (alphabet.find(codePoint) == alphabet.end()) {
+        // This is a new letter,
+        // add it to the alphabet
+        alphabet[codePoint] = 1;
       } else {
-        // Nothing to do.
+        // The letter is already in the alphabet
+        ++(alphabet[codePoint]);
       }
-    } else {
-      assert(state == 1);  // Reading a word
-      if (letter) {
-        word += unicodeChar(toLowerLetter(c));
-      } else {
-        // End of word reading
-        if (words.count(word) == 0) {
-          // Add the word to the dictionary
-          words[word] = 1;
-        } else {
-          // Increment the number of word occurencies in the text
-          ++words[word];
-        }
-        state = 0;  // State = between words
+      if (previousLetter >= 0) {
+        ++bigramsDetected;
+        Bigram currentBigram(previousLetter, codePoint);
+        if (bigrams.count(currentBigram) != 0)
+          ++(bigrams[currentBigram]);
+        else
+          bigrams[currentBigram] = 1;
       }
-    }
-  }
-  if (state == 1) {
-    // Process the last word
-    if (words.count(word) == 0) {
-      // Add the word to the dictionary
-      words[word] = 1;
+      previousLetter = codePoint;
     } else {
-      // Increment the number of word occurencies in the text
-      ++words[word];
+      previousLetter = -1;
     }
-  }
 
-  // Our dictionary is ready!
-  // Sort the words by their numbers in the text
-  vector<pair<unicodeString, int> > wordsFreq;
-  auto i = words.cbegin();
-  while (i != words.end()) {
-    wordsFreq.push_back(*i);
+  }  // end of while
+
+  vector<pair<int, int>> pairs;
+  auto i = alphabet.begin();
+  while (i != alphabet.end()) {
+    pairs.emplace_back(i->second, i->first);
     ++i;
   }
+  stable_sort(pairs.begin(), pairs.end(), compareCharPairs);
 
-  sort(wordsFreq.begin(), wordsFreq.end(), comparePairs);
-
-  // Print the results
-  for (size_t i = 0; i < wordsFreq.size(); ++i) {
-    cout << wordsFreq[i].second << "\t" << wordsFreq[i].first << endl;
+  // Print results
+  for (auto& pair : pairs) {
+    // Print a letter
+    output_utf8(cout, pair.second);
+    // Print its frequence
+    cout << ' ' << pair.first << ' ' << (double)pair.first / (double)totalChars
+         << endl;
   }
 
-  cout << "Total number of different words in a text: " << wordsFreq.size()
-       << endl;
+  cout << endl << "------------" << endl;
+  cout << "Bigrmas in the text:" << endl;
+  vector<pair<int, Bigram>> bigramPairs;
+  auto j = bigrams.begin();
+  while (j != bigrams.end()) {
+    bigramPairs.emplace_back(j->second, j->first);
+    ++j;
+  }
+
+  stable_sort(bigramPairs.begin(), bigramPairs.end(), compareBigramPairs);
+
+  // Print results
+  for (auto& pair : bigramPairs) {
+    // Print a bigram
+    output_utf8(cout, pair.second.bigram[0]);
+    output_utf8(cout, pair.second.bigram[1]);
+    // Print its frequence
+    cout << ' ' << pair.first << ' '
+         << (double)pair.first / (double)bigramsDetected << endl;
+  }
+
   return 0;
-}
-
-bool comparePairs(  // Return true iff x < y
-    const pair<unicodeString, int>& x, const pair<unicodeString, int>& y) {
-  if (x.second > y.second) {
-    return true;
-  } else if (x.second < y.second) {
-    return false;
-  }
-  assert(x.second == y.second);
-  return (x.first < y.first);
-}
-
-bool operator<(const unicodeString& s1, const unicodeString& s2) {
-  size_t l1 = s1.length();
-  size_t l2 = s2.length();
-  for (size_t i = 0; i < l1; ++i) {
-    if (i >= l2) {
-      // s2 is a beginning of s1
-      return false;
-    }
-    int c = compareRussianLetters(s1[i], s2[i]);
-    if (c < 0) {
-      return true;
-    } else if (c > 0) {
-      return false;
-    }
-    assert(s1[i] == s2[i]);
-  }
-  if (l2 > l1) {
-    return true;
-  }
-  assert(l1 == l2);
-  return false;
-}
-
-ostream& operator<<(ostream& s, const unicodeString& txt) {
-  size_t l = txt.length();
-  for (size_t i = 0; i < l; ++i) {
-    output_utf8(s, txt[i]);
-  }
-  return s;
 }

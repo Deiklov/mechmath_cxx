@@ -1,86 +1,131 @@
+#include <algorithm>
+#include <cassert>
+#include <cctype>
 #include <iostream>
+#include <map>
+#include <string>
+#include <vector>
 
-#include "Matrix/Matrix.hpp"
+#include "utf8/utf8.h"
 
 using namespace std;
 
-void fullHandler(Matrix& A, vector<double>& bvect) {
-  Matrix b(bvect, bvect.size(), 1);
+typedef int unicodeChar;
+typedef basic_string<unicodeChar> unicodeString;
 
-  cout << "Matrix:" << endl;
-  cout << A;
-  cout << "------------" << endl;
+bool comparePairs(  // Return true iff x < y
+    const pair<unicodeString, int>& x, const pair<unicodeString, int>& y);
 
-  if (A.rows() == A.columns()) {
-    cout << "Determinant of A" << endl;
-    cout << A.determinant() << endl;
-    cout << "------------" << endl;
-    cout << "Inverse of A" << endl;
-    cout << A.inverse() << endl;
-    cout << "------------" << endl;
-  }
+ostream& operator<<(ostream& s, const unicodeString& txt);
 
-  cout << "Add A+A:" << endl;
-  cout << A + A << endl;
-  cout << "------------" << endl;
-  cout << "Sub A-Id:" << endl;
-  cout << A - Matrix::createIdentity(A.rows()) << endl;
-  cout << "------------" << endl;
-  cout << "Mul A*A:" << endl;
-  cout << A * A << endl;
-  cout << "------------" << endl;
-  cout << "Row echelon form of A" << endl;
-  cout << A.gaussianEliminate() << endl;
-  cout << "------------" << endl;
-  cout << "Rank of A" << endl;
-  cout << A.rank() << endl;
-  cout << "------------" << endl;
-
-  auto lmda = [&bvect](ostream& os) -> ostream& {
-    for (auto v : bvect) {
-      cout << v << " ";
-    }
-    return os;
-  };
-  cout << "Solution for ";
-  lmda(cout) << " vector" << endl;
-  cout << A.solveSLE(b) << endl;
-}
-
-void testPredefinedValues() {
-  vector<double> bvect{1, 2, 3, 1};
-  Matrix A(vector<double>{3, 3.3, -4, -3, 0, 6.5, 1, 1, 5, 4, 2, 1, 2, 3, 3, 2},
-           4, 4);
-  fullHandler(A, bvect);
-}
-
-void testInputOutput() {
-  while (true) {
-    int m, n;
-    cout << "Enter dimensions of matrix(rows,cols): " << endl;
-    cin >> m >> n;
-    if (!cin.good()) {
-      break;
-    }
-    Matrix A(m, n);
-    cout << "Enter elements of matrix: " << endl;
-    cin >> A;
-    if (!cin.good()) {
-      cout << "Incorrect input" << endl;
-      break;
-    }
-    vector<double> bvect(m);
-    cout << "Enter constant terms for system of linear equations (must to be "
-         << m << " members): " << endl;
-    for (int i = 0; i < m; ++i) {
-      cin >> bvect[i];
-    }
-    fullHandler(A, bvect);
-  }
-}
+bool operator<(const unicodeString& s1, const unicodeString& s2);
 
 int main() {
-  testInputOutput();
-  //  testPredefinedValues();
+  int state = 0;  // 0 between words, 1 inside a word
+  unicodeString word;
+  map<unicodeString, int> words;
+  while (true) {
+    bool readFails = false;
+    unicodeChar c;
+    // cin >> c;
+    c = unicodeChar(get_utf8_code_point(cin, readFails));
+    if (readFails) break;
+    bool letter = isRussianLetter(c);
+    if (state == 0) {  // Between words
+      if (letter) {
+        word.clear();
+        word += unicodeChar(toLowerLetter(c));
+        state = 1;  // Reading a word
+      } else {
+        // Nothing to do.
+      }
+    } else {
+      assert(state == 1);  // Reading a word
+      if (letter) {
+        word += unicodeChar(toLowerLetter(c));
+      } else {
+        // End of word reading
+        if (words.count(word) == 0) {
+          // Add the word to the dictionary
+          words[word] = 1;
+        } else {
+          // Increment the number of word occurencies in the text
+          ++words[word];
+        }
+        state = 0;  // State = between words
+      }
+    }
+  }
+  if (state == 1) {
+    // Process the last word
+    if (words.count(word) == 0) {
+      // Add the word to the dictionary
+      words[word] = 1;
+    } else {
+      // Increment the number of word occurencies in the text
+      ++words[word];
+    }
+  }
+
+  // Our dictionary is ready!
+  // Sort the words by their numbers in the text
+  vector<pair<unicodeString, int> > wordsFreq;
+  auto i = words.cbegin();
+  while (i != words.end()) {
+    wordsFreq.push_back(*i);
+    ++i;
+  }
+
+  sort(wordsFreq.begin(), wordsFreq.end(), comparePairs);
+
+  // Print the results
+  for (size_t i = 0; i < wordsFreq.size(); ++i) {
+    cout << wordsFreq[i].second << "\t" << wordsFreq[i].first << endl;
+  }
+
+  cout << "Total number of different words in a text: " << wordsFreq.size()
+       << endl;
   return 0;
+}
+
+bool comparePairs(  // Return true iff x < y
+    const pair<unicodeString, int>& x, const pair<unicodeString, int>& y) {
+  if (x.second > y.second) {
+    return true;
+  } else if (x.second < y.second) {
+    return false;
+  }
+  assert(x.second == y.second);
+  return (x.first < y.first);
+}
+
+bool operator<(const unicodeString& s1, const unicodeString& s2) {
+  size_t l1 = s1.length();
+  size_t l2 = s2.length();
+  for (size_t i = 0; i < l1; ++i) {
+    if (i >= l2) {
+      // s2 is a beginning of s1
+      return false;
+    }
+    int c = compareRussianLetters(s1[i], s2[i]);
+    if (c < 0) {
+      return true;
+    } else if (c > 0) {
+      return false;
+    }
+    assert(s1[i] == s2[i]);
+  }
+  if (l2 > l1) {
+    return true;
+  }
+  assert(l1 == l2);
+  return false;
+}
+
+ostream& operator<<(ostream& s, const unicodeString& txt) {
+  size_t l = txt.length();
+  for (size_t i = 0; i < l; ++i) {
+    output_utf8(s, txt[i]);
+  }
+  return s;
 }

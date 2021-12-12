@@ -1,5 +1,8 @@
-CC = g++ $(CXXFLAGS)
-CXXFLAGS=-std=c++11 -Wall -O0
+CC = g++ $(CFLAGS)
+CFLAGS = -O0 -g
 
-compile:
-	$(CC) -o matrix main.cpp Matrix/Matrix.cpp
+russianWords: russianWords.cpp utf8/utf8.h utf8/utf8.cpp
+	$(CC) -o russianWords russianWords.cpp utf8/utf8.cpp
+
+clean:
+	rm -f russianWords russianWords.exe

@@ -5,7 +5,7 @@
 
 Инструкция по запуску  
 1. make compile
-2. ./matrix
+2. ./bigrams
 
 Второй вариант:  
 Через cmake

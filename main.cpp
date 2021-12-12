@@ -1,7 +1,7 @@
+#include <algorithm>
 #include <iostream>
 #include <map>
 #include <vector>
-#include <algorithm>
 
 #include "utf8//utf8.h"
 
@@ -20,18 +20,9 @@ class Bigram {
     assert(c1 == 0);
     int c2 = compareRussianLetters(bigram[1], b.bigram[1]);
     return c2 < 0;
-    //    return (bigram[0] < b.bigram[0] ||
-    //            (bigram[0] == b.bigram[0] && bigram[1] < b.bigram[1]));
   }
 };
 
-bool compareCharPairs(const pair<int, int>& p0, const pair<int, int>& p1) {
-  if (p0.first > p1.first) return true;
-  if (p0.first < p1.first) return false;
-  assert(p0.first == p1.first);
-  int c1 = compareRussianLetters(p0.second, p1.second);
-  return c1 < 0;
-}
 
 bool compareBigramPairs(const pair<int, Bigram>& p0,
                         const pair<int, Bigram>& p1) {
@@ -76,25 +67,9 @@ int main() {
 
   }  // end of while
 
-  vector<pair<int, int>> pairs;
-  auto i = alphabet.begin();
-  while (i != alphabet.end()) {
-    pairs.emplace_back(i->second, i->first);
-    ++i;
-  }
-  stable_sort(pairs.begin(), pairs.end(), compareCharPairs);
-
-  // Print results
-  for (auto& pair : pairs) {
-    // Print a letter
-    output_utf8(cout, pair.second);
-    // Print its frequence
-    cout << ' ' << pair.first << ' ' << (double)pair.first / (double)totalChars
-         << endl;
-  }
 
   cout << endl << "------------" << endl;
-  cout << "Bigrmas in the text:" << endl;
+  cout << "Bigrams in the text:" << endl;
   vector<pair<int, Bigram>> bigramPairs;
   auto j = bigrams.begin();
   while (j != bigrams.end()) {
@@ -105,13 +80,13 @@ int main() {
   stable_sort(bigramPairs.begin(), bigramPairs.end(), compareBigramPairs);
 
   // Print results
-  for (auto& pair : bigramPairs) {
+  for (int i = 0; i < 100 && i < bigramPairs.size(); ++i) {
     // Print a bigram
-    output_utf8(cout, pair.second.bigram[0]);
-    output_utf8(cout, pair.second.bigram[1]);
+    output_utf8(cout, bigramPairs[i].second.bigram[0]);
+    output_utf8(cout, bigramPairs[i].second.bigram[1]);
     // Print its frequence
-    cout << ' ' << pair.first << ' '
-         << (double)pair.first / (double)bigramsDetected << endl;
+    cout << ' ' << bigramPairs[i].first << ' '
+         << (double)bigramPairs[i].first / (double)bigramsDetected << endl;
   }
 
   return 0;
